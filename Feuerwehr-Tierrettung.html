@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="de"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Feuerwehr-Tierrettung</title>
+<style>
+:root{--bg:#fff3d9;--card:#fff;--ink:#1d2b4f;--red:#d93a2b;--sun:#ffcf3f;--wood:#c58a47;--sky:#d4ebff;--ok:#2f9e5b;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121c36;--card:#1f2d52;--ink:#fff3dc;--sky:#27426f}}
+:root[data-theme="dark"]{--bg:#121c36;--card:#1f2d52;--ink:#fff3dc;--sky:#27426f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;min-height:100vh}
+header{display:flex;align-items:center;gap:10px;padding:8px 14px;background:var(--red);color:#fff}
+header h1{font-size:1.4rem;margin:0;flex:1}
+header button{background:rgba(255,255,255,.25);border:0;color:#fff;font:inherit;font-size:1rem;border-radius:12px;padding:0 14px;height:44px}
+#station{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:6px 14px;background:var(--sun);color:#1d2b4f;min-height:54px;font-weight:bold}
+#station span{display:flex;align-items:center;gap:2px}
+main{display:grid;gap:12px;padding:12px;grid-template-columns:1fr;max-width:1000px;margin:0 auto}
+main.lad{grid-template-columns:1fr}
+@media(min-width:720px){main.lad{grid-template-columns:230px 1fr}}
+.card{background:var(--card);border-radius:22px;padding:16px;box-shadow:0 4px 0 rgba(0,0,0,.12)}
+#ladderbox{background:var(--sky);max-height:72vh;overflow-y:auto;display:none;flex-direction:column;align-items:center;padding-right:60px}
+.ladder{display:flex;flex-direction:column;align-items:center;border-left:9px solid var(--wood);border-right:9px solid var(--wood);width:130px;padding:4px 0}
+.rung{width:100%;height:34px;display:flex;align-items:center;justify-content:center;border-top:8px solid var(--wood);position:relative;font-weight:bold;font-size:1.2rem}
+.rung.on{background:var(--sun);color:#1d2b4f}
+.rung.dot{height:26px}
+.rung .m{position:absolute;right:-64px;top:-14px}
+.gap{font-size:1rem;font-weight:bold;color:var(--red);padding:6px 0}
+#hint{font-size:1.1rem;margin:0 0 8px;font-weight:bold}
+#scene{display:flex;justify-content:center;align-items:center;gap:18px;min-height:90px}
+#task{font-size:1.7rem;line-height:1.4;text-align:center;margin-top:6px}
+#task b{color:var(--red);font-size:2.2rem}
+#sub{font-size:1.2rem;text-align:center;margin-top:4px;opacity:.85}
+#ans{font-size:3rem;font-weight:bold;text-align:center;min-height:72px;border:4px dashed var(--wood);border-radius:18px;margin:12px auto;max-width:240px;line-height:64px}
+#pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:340px;margin:0 auto}
+#pad button,.btn{font:inherit;font-size:2rem;font-weight:bold;height:68px;border:0;border-radius:18px;background:var(--sun);color:#1d2b4f;box-shadow:0 4px 0 rgba(0,0,0,.2)}
+#pad button:active,.btn:active{transform:translateY(3px);box-shadow:none}
+#pad .go{background:var(--ok);color:#fff;font-size:1.3rem}
+.row{display:flex;gap:10px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+.btn{font-size:1.2rem;padding:0 20px;height:54px}
+.btn.red{background:var(--red);color:#fff}
+#msg{text-align:center;font-size:1.6rem;padding:10px;min-height:44px;font-weight:bold}
+.hop{display:inline-block;animation:hop .7s 2}
+@keyframes hop{50%{transform:translateY(-20px) scale(1.15)}}
+@media(prefers-reduced-motion:reduce){.hop{animation:none}}
+dialog{border:0;border-radius:22px;padding:18px;max-width:560px;width:94%;background:var(--card);color:var(--ink);max-height:92vh;overflow-y:auto}
+dialog::backdrop{background:rgba(0,0,0,.55)}
+dialog h2{margin:0 0 6px}dialog h3{margin:14px 0 6px}
+dialog input,dialog select{font:inherit;font-size:1.1rem;padding:6px;border-radius:8px;border:2px solid var(--wood);background:var(--card);color:var(--ink);max-width:100%}
+dialog input[type=number]{width:80px}
+.pre{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.pre button{font:inherit;padding:8px 10px;border-radius:10px;border:2px solid var(--wood);background:var(--sky);color:var(--ink)}
+.note{font-size:.95rem;opacity:.8}
+</style></head><body>
+<header><h1>Feuerwehr-Tierrettung</h1><button id="snd">Ton: an</button><button id="gear" aria-label="Einstellungen für Eltern, gedrückt halten">Eltern</button></header>
+<div id="station"></div>
+<main id="main">
+<section class="card" id="ladderbox"><p id="hint"></p><div id="ladder"></div></section>
+<section class="card">
+<div id="scene"></div><div id="task"></div><div id="sub"></div>
+<div id="ans"></div><div id="pad"></div>
+<div class="row"><button class="btn" id="again">Nochmal hören</button><button class="btn" id="slow">Ganz langsam</button></div>
+<div id="msg"></div>
+</section></main>
+<dialog id="dlg"></dialog>
+<script>
+const E='<circle cx="38" cy="52" r="5" fill="#222"/><circle cx="62" cy="52" r="5" fill="#222"/>';
+const ART={
+cat:'<polygon points="20,42 26,8 48,28" fill="#f0a04b"/><polygon points="80,42 74,8 52,28" fill="#f0a04b"/><circle cx="50" cy="56" r="33" fill="#f0a04b"/>'+E+'<path d="M45 64h10l-5 6z" fill="#e57a8a"/><path d="M12 60h20M12 70l20-4M88 60H68M88 70l-20-4" stroke="#222" stroke-width="2"/>',
+squirrel:'<path d="M78 82C108 64 102 18 76 30" fill="none" stroke="#a5602b" stroke-width="16" stroke-linecap="round"/><circle cx="28" cy="26" r="11" fill="#b8733a"/><circle cx="68" cy="26" r="11" fill="#b8733a"/><circle cx="48" cy="56" r="32" fill="#b8733a"/><ellipse cx="48" cy="68" rx="16" ry="12" fill="#f3dcb8"/><circle cx="36" cy="52" r="5" fill="#222"/><circle cx="60" cy="52" r="5" fill="#222"/><circle cx="48" cy="64" r="4" fill="#222"/>',
+parrot:'<circle cx="50" cy="52" r="36" fill="#43b05c"/><path d="M40 20q10-14 20 0z" fill="#e5483b"/><circle cx="36" cy="46" r="11" fill="#fff"/><circle cx="64" cy="46" r="11" fill="#fff"/><circle cx="37" cy="47" r="5" fill="#222"/><circle cx="63" cy="47" r="5" fill="#222"/><path d="M38 60q12 30 24 0z" fill="#f5a623"/>',
+hedgehog:'<path d="M8 76A42 42 0 0 1 92 76z" fill="#6b4a2f"/><ellipse cx="50" cy="70" rx="30" ry="22" fill="#e8c9a0"/><circle cx="40" cy="64" r="5" fill="#222"/><circle cx="60" cy="64" r="5" fill="#222"/><circle cx="50" cy="76" r="5" fill="#222"/>',
+owl:'<polygon points="20,34 24,6 44,22" fill="#8a5a33"/><polygon points="80,34 76,6 56,22" fill="#8a5a33"/><ellipse cx="50" cy="58" rx="35" ry="38" fill="#8a5a33"/><circle cx="35" cy="48" r="15" fill="#fff"/><circle cx="65" cy="48" r="15" fill="#fff"/><circle cx="35" cy="49" r="7" fill="#222"/><circle cx="65" cy="49" r="7" fill="#222"/><path d="M44 62h12l-6 12z" fill="#f5a623"/>',
+rabbit:'<ellipse cx="34" cy="22" rx="10" ry="22" fill="#fff" stroke="#bbb" stroke-width="2"/><ellipse cx="66" cy="22" rx="10" ry="22" fill="#fff" stroke="#bbb" stroke-width="2"/><circle cx="50" cy="60" r="32" fill="#fff" stroke="#bbb" stroke-width="2"/><circle cx="38" cy="56" r="5" fill="#222"/><circle cx="62" cy="56" r="5" fill="#222"/><path d="M45 66h10l-5 6z" fill="#e57a8a"/>'};
+const AN=[["cat","Mimi"],["squirrel","Nuss"],["parrot","Paul"],["hedgehog","Igor"],["owl","Uli"],["rabbit","Hoppel"]];
+const animal=(k,s=60)=>`<svg width="${s}" height="${s}" viewBox="0 0 100 100" aria-hidden="true">${ART[k]}</svg>`;
+const truck=(s=60)=>`<svg width="${s*1.7}" height="${s}" viewBox="0 0 120 70" aria-hidden="true"><rect x="12" y="12" width="56" height="6" rx="2" fill="#ccd"/><path d="M20 12v6M32 12v6M44 12v6M56 12v6" stroke="#889" stroke-width="2"/><rect x="5" y="22" width="70" height="32" rx="5" fill="#d93a2b"/><rect x="75" y="30" width="38" height="24" rx="5" fill="#d93a2b"/><rect x="84" y="34" width="20" height="11" rx="2" fill="#cde8ff"/><rect x="10" y="36" width="60" height="4" fill="#fff"/><circle cx="28" cy="56" r="10" fill="#333"/><circle cx="92" cy="56" r="10" fill="#333"/><circle cx="28" cy="56" r="4" fill="#bbb"/><circle cx="92" cy="56" r="4" fill="#bbb"/></svg>`;
+const star=`<svg width="44" height="44" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3 7 7 .6-5.3 4.7 1.7 7.2L12 17.7 5.6 21.5l1.7-7.2L2 9.6 9 9z" fill="#ffcf3f" stroke="#e0a800"/></svg>`;
+const DEF={a:[10,99],b:[1,9],type:"dist",note:"auto",carry:"any",rate:.65,voice:""};
+let cfg={...DEF},sav={rescued:{},prog:0},T,val="",help=false,busy=false,sound=true,voice=null,vtok=0;
+try{cfg={...DEF,...JSON.parse(localStorage.getItem("fw_cfg"))}}catch(e){}
+try{sav={...sav,...JSON.parse(localStorage.getItem("fw_sav"))}}catch(e){}
+const $=s=>document.querySelector(s),sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const store=()=>{try{localStorage.setItem("fw_cfg",JSON.stringify(cfg));localStorage.setItem("fw_sav",JSON.stringify(sav))}catch(e){}};
+const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pick=a=>a[rnd(0,a.length-1)];
+// Stimme: beste deutsche Stimme wählen, in Sätze zerlegen, Tonhöhe und Tempo variieren
+function deVoices(){try{return speechSynthesis.getVoices().filter(v=>/^de/i.test(v.lang))}catch(e){return[]}}
+function pickVoice(){const vs=deVoices();voice=vs.find(v=>v.name===cfg.voice)||vs.find(v=>/natural|neural|online/i.test(v.name))||vs.find(v=>/google/i.test(v.name))||vs.find(v=>/anna|katja|marlene|vicki|petra|hedda|amala|conrad/i.test(v.name))||vs[0]||null}
+try{speechSynthesis.onvoiceschanged=pickVoice;pickVoice()}catch(e){}
+async function say(t,slow){
+ if(!sound)return;const my=++vtok;
+ try{speechSynthesis.cancel()}catch(e){return}await sleep(150);if(my!==vtok)return;
+ const parts=t.split(/(?<=[.!?])\s+/).filter(Boolean);
+ for(let i=0;i<parts.length;i++){
+  if(my!==vtok)return;
+  const p=parts[i],u=new SpeechSynthesisUtterance(p);
+  u.lang="de-DE";if(voice)u.voice=voice;
+  const q=/\?$/.test(p),x=/!$/.test(p);
+  u.rate=cfg.rate*(slow?.75:1);
+  u.pitch=x?1.22:q?1.12:1.0;
+  u.volume=1;
+  await new Promise(r=>{u.onend=r;u.onerror=r;setTimeout(r,2500+p.length*120/u.rate);try{speechSynthesis.speak(u)}catch(e){r()}});
+  await sleep(q?600:450)}}
+const U=["null","eins","zwei","drei","vier","fünf","sechs","sieben","acht","neun","zehn","elf","zwölf","dreizehn","vierzehn","fünfzehn","sechzehn","siebzehn","achtzehn","neunzehn"],Z=["","","zwanzig","dreißig","vierzig","fünfzig","sechzig","siebzig","achtzig","neunzig"];
+function zw(n){n=+n;if(n<20)return U[n];if(n<100){const e=n%10,z=Z[(n/10)|0];return e?(e===1?"ein":U[e])+"und"+z:z}const h=(n/100)|0,r=n%100;return(h===1?"einhundert":U[h]+"hundert")+(r?zw(r):"")}
+function note(){return cfg.note==="auto"?(sav.prog<6?"ladder":sav.prog<14?"arrow":"minus"):cfg.note}
+function gen(){
+ const t=cfg.type==="mix"?(Math.random()<.5?"dist":"down"):cfg.type;let a,b;
+ for(let i=0;i<300;i++){a=rnd(...cfg.a);b=rnd(...cfg.b);if(a<=b)continue;
+  const c=(a%10)<(b%10);if(cfg.carry==="yes"&&!c)continue;if(cfg.carry==="no"&&c)continue;break}
+ if(a<=b){const m=Math.max(a,b);b=Math.min(a,b);a=m;if(a===b)a=b+1}
+ T={a,b,t,an:pick(AN),ans:a-b,lo:t==="dist"?b:a-b,hi:a,fails:0};val="";help=false;busy=false;
+ $("#msg").textContent="";draw();say(speech())}
+function speech(){const n=note(),nm=T.an[1],A=zw(T.a),B=zw(T.b);
+ if(T.t==="down")return `${nm} sitzt auf ${A}. ${B} Sprossen runter. Wo landet ${nm}?`;
+ if(n==="ladder")return `Von ${B}. Bis ${A}. Wie viele Sprossen?`;
+ if(n==="arrow")return `Von ${B}. Bis ${A}. Wie weit?`;
+ return `${A} minus ${B}. Wie viel?`}
+function draw(){
+ const n=note();let big,sub="";
+ $("#scene").innerHTML=truck(54)+animal(T.an[0],70);
+ if(T.t==="down"){big=`${T.an[1]} sitzt auf <b>${T.a}</b>.<br><b>${T.b}</b> Sprossen runter.<br>Wo landet ${T.an[1]}?`;if(n==="minus")sub=`${T.a} − ${T.b} = ?`}
+ else if(n==="ladder"){big=`Von <b>${T.b}</b> bis <b>${T.a}</b>.<br>Wie viele Sprossen?`}
+ else if(n==="arrow"){big=`<b>${T.a}</b> ⟷ <b>${T.b}</b> = ?`;sub="Wie weit?"}
+ else big=`<b>${T.a} − ${T.b}</b> = ?`;
+ $("#task").innerHTML=big;$("#sub").textContent=sub;$("#ans").textContent=val;
+ const show=help||T.fails>0||(n==="ladder"&&T.t==="dist");
+ $("#ladderbox").style.display=show?"flex":"none";$("#main").className=show?"lad":"";
+ $("#hint").textContent=T.t==="dist"?"Die Leiter":"Der Weg nach unten";
+ if(show)$("#ladder").innerHTML=ladder(false);station()}
+function station(){const r=Object.entries(sav.rescued).map(([k,c])=>`<span>${animal(k,36)}×${c}</span>`).join("");
+ $("#station").innerHTML=`Feuerwache: ${r||"noch leer. Rette dein erstes Tier!"}`}
+function ladder(reveal){
+ const {lo,hi}=T,dist=T.t==="dist",comp=hi-lo>20;let pts=[];
+ if(!comp){for(let x=lo;x<=hi;x++)pts.push(x)}
+ else{pts=[lo];for(let x=Math.floor(lo/10)*10+10;x<hi;x+=10)pts.push(x);pts.push(hi)}
+ pts.reverse();let h='<div class="ladder">';
+ pts.forEach((n,i)=>{let label=n,mk="";
+  if(n===hi)mk=animal(T.an[0],46);
+  if(n===lo&&(dist||reveal))mk=truck(30);
+  if(!dist&&!reveal){if(n===lo)label="?";else if(n!==hi&&!comp)label=""}
+  h+=`<div class="rung${label===""?" dot":""}${reveal?" on":""}" data-n="${n}">${label}<span class="m">${mk}</span></div>`;
+  if(comp&&i<pts.length-1)h+=`<div class="gap">${dist?"+":"−"}${n-pts[i+1]}</div>`});
+ return h+"</div>"}
+async function count(){
+ if(busy)return;busy=true;help=true;draw();
+ const rs=[...document.querySelectorAll(".rung")],dist=T.t==="dist",comp=T.hi-T.lo>20;
+ const order=dist?rs.slice().reverse():rs;let tot=0;
+ for(let i=1;i<order.length;i++){
+  const d=Math.abs(+order[i].dataset.n-+order[i-1].dataset.n);tot+=d;
+  order[i].classList.add("on");order[i].scrollIntoView({block:"nearest"});
+  say(zw(comp?d:tot));await sleep(comp?1500:1000)}
+ await sleep(400);
+ if(!dist)$("#ladder").innerHTML=ladder(true);
+ say(dist?`${zw(T.ans)} Sprossen!`:`${T.an[1]} landet auf ${zw(T.ans)}!`);busy=false}
+function check(){
+ if(busy||val==="")return;
+ if(+val===T.ans){sav.prog++;setTimeout(done,0);
+  $("#msg").innerHTML=`<span class="hop">${star}${star}${star}</span><br>${pick(["Super!","Toll!","Klasse!"])} Gerettet!`;
+  say(`${pick(["Super!","Toll!","Klasse!"])} Gerettet!`)}
+ else{T.fails++;val="";$("#ans").textContent="";
+  if(T.fails===1){const m="Probier’s nochmal!";$("#msg").textContent=m;say(m);draw()}
+  else if(T.fails===2){$("#msg").textContent="Wir zählen zusammen.";draw();say("Wir zählen zusammen.").then(()=>sleep(300)).then(count)}
+  else{const m=`Die Lösung ist ${zw(T.ans)}! Geschafft!`;$("#msg").innerHTML=`Die Lösung ist <b>${T.ans}</b>.<br>Gemeinsam geschafft!`;$("#ladder").innerHTML=ladder(true);$("#ladderbox").style.display="flex";$("#main").className="lad";say(m);done()}}}
+function done(){
+ sav.rescued[T.an[0]]=(sav.rescued[T.an[0]]||0)+1;store();busy=true;station();
+ const b=document.createElement("button");b.className="btn red";b.textContent="Nächster Einsatz";b.onclick=gen;
+ $("#msg").appendChild(document.createElement("br"));$("#msg").appendChild(b)}
+$("#pad").innerHTML=[1,2,3,4,5,6,7,8,9,"⌫",0,"OK"].map(k=>`<button data-k="${k}"${k==="OK"?' class="go"':''}>${k}</button>`).join("");
+$("#pad").onclick=e=>{const k=e.target.dataset.k;if(k==null||busy)return;
+ if(k==="⌫")val=val.slice(0,-1);else if(k==="OK"){check();return}else if(val.length<3)val+=k;
+ $("#ans").textContent=val};
+
+$("#again").onclick=()=>say(speech());$("#slow").onclick=()=>say(speech(),true);
+$("#snd").onclick=e=>{sound=!sound;e.target.textContent=sound?"Ton: an":"Ton: aus";if(!sound){vtok++;try{speechSynthesis.cancel()}catch(x){}}};
+let tm;const g=$("#gear");
+g.onpointerdown=()=>{tm=setTimeout(settings,1500)};
+["pointerup","pointerleave","pointercancel"].forEach(ev=>g.addEventListener(ev,()=>clearTimeout(tm)));
+g.oncontextmenu=e=>e.preventDefault();
+function numBlock(k,title){return `<h3>${title}</h3><div class="pre">
+ <button data-k="${k}" data-r="1,10">bis 10</button><button data-k="${k}" data-r="1,20">bis 20</button><button data-k="${k}" data-r="1,9">1-stellig</button><button data-k="${k}" data-r="10,99">2-stellig</button><button data-k="${k}" data-r="100,999">3-stellig</button></div>
+ von <input type="number" id="${k}min" min="0" max="999" value="${cfg[k][0]}"> bis <input type="number" id="${k}max" min="0" max="999" value="${cfg[k][1]}">`}
+const opt=(v,cur,t)=>`<option value="${v}"${v===cur?" selected":""}>${t}</option>`;
+function settings(){
+ const d=$("#dlg"),vs=deVoices();
+ d.innerHTML=`<h2>Einstellungen für Eltern</h2>
+ <p class="note">Die erste Zahl ist immer die größere. Ist sie zufällig kleiner, tauscht das Spiel die Zahlen.</p>
+ ${numBlock("a","1. Zahl (die größere, wo das Tier sitzt)")}${numBlock("b","2. Zahl (die kleinere, wo das Auto steht)")}
+ <h3>Aufgabenart</h3><select id="ty">${opt("dist",cfg.type,"Wie viele Sprossen? (Abstand)")}${opt("down",cfg.type,"Tier klettert nach unten (Wegnehmen)")}${opt("mix",cfg.type,"Gemischt")}</select>
+ <h3>Darstellung</h3><select id="no">${opt("auto",cfg.note,"Automatisch (Leiter, dann Pfeil, dann Minus)")}${opt("ladder",cfg.note,"Nur Leiter und Worte, ohne Minus")}${opt("arrow",cfg.note,"Pfeil ⟷")}${opt("minus",cfg.note,"Minus-Zeichen")}</select>
+ <h3>Zehnerübergang (z. B. 53 − 8)</h3><select id="ca">${opt("any",cfg.carry,"egal")}${opt("no",cfg.carry,"nein (z. B. 58 − 3)")}${opt("yes",cfg.carry,"ja, immer")}</select>
+ <h3>Stimme</h3><select id="vo">${vs.length?vs.map(v=>opt(v.name,voice&&voice.name,v.name+" ("+v.lang+")")).join(""):"<option value=''>Keine deutsche Stimme gefunden</option>"}</select>
+ <p>Tempo: <input type="range" id="ra" min="0.5" max="1.1" step="0.02" value="${cfg.rate}"> <button class="btn" id="te" style="height:42px;font-size:1rem">Anhören</button></p>
+ <p class="note">Bessere Stimmen findest du in den Tablet-Einstellungen unter „Sprache und Eingabe“, „Text-to-Speech“.</p>
+ <p class="note">Fortschritt: ${sav.prog} richtig gelöste Aufgaben.</p>
+ <div class="row"><button class="btn red" id="sv">Speichern</button><button class="btn" id="cl">Abbrechen</button><button class="btn" id="rs">Fortschritt löschen</button></div>`;
+ d.onclick=e=>{const r=e.target.dataset.r;if(r){const[mi,ma]=r.split(",");$("#"+e.target.dataset.k+"min").value=mi;$("#"+e.target.dataset.k+"max").value=ma}};
+ d.showModal();
+ $("#te").onclick=()=>{cfg.rate=+$("#ra").value;cfg.voice=$("#vo").value;pickVoice();say("Hallo! Ich helfe dir, die Tiere zu retten. Wie viele Sprossen sind es?")};
+ $("#cl").onclick=()=>d.close();
+ $("#rs").onclick=()=>{if(confirm("Fortschritt und Feuerwache wirklich löschen?")){sav={rescued:{},prog:0};store();d.close();gen()}};
+ $("#sv").onclick=()=>{
+  const f=k=>{let lo=Math.max(0,+$("#"+k+"min").value||0),hi=Math.max(0,+$("#"+k+"max").value||0);return lo<=hi?[lo,hi]:[hi,lo]};
+  cfg={...cfg,a:f("a"),b:f("b"),type:$("#ty").value,note:$("#no").value,carry:$("#ca").value,rate:+$("#ra").value,voice:$("#vo").value};
+  pickVoice();store();d.close();gen()}}
+setTimeout(()=>{if(!deVoices().length){const w=document.createElement("p");w.style.cssText="text-align:center;padding:0 12px;color:var(--red);font-weight:bold";w.textContent="Hinweis für Eltern: Auf diesem Tablet wurde keine deutsche Stimme gefunden. Bitte unter Einstellungen, Sprache und Eingabe, Text-to-Speech eine deutsche Stimme installieren.";$("#station").after(w)}},2500);
+gen();
+</script></body></html>
